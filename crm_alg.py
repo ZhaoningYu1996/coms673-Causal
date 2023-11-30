@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from tqdm import tqdm
 
 def P_X1():
     return np.random.choice([0, 1], p=[0.5, 0.5])
@@ -33,13 +34,14 @@ def CRM_ALG(T):
     # Initialize variables
     N = 2  # Number of arms (X2 and X3)
     beta = 1
-    observations = []  # Store (Y, a_s)
-    interventions = {'X2': [], 'X3': []}  # Store outcomes for interventions
-    arm_pulls = {'a0': 0, 'X2': 0, 'X3': 0}  # Number of times each arm is pulled
-    cumulative_regrets = []
-    for _ in range(30):  # 30 independent runs
+    
+    for _ in range(1):  # 30 independent runs
+        observations = []  # Store (Y, a_s)
+        interventions = {'X2': [], 'X3': []}  # Store outcomes for interventions
+        arm_pulls = {'a0': 0, 'X2': 0, 'X3': 0}  # Number of times each arm is pulled
+        cumulative_regrets = []
         regret = 0
-        for t in range(1, T + 1):
+        for t in tqdm(range(1, T + 1)):
             # Decide which arm to pull
             if arm_pulls['a0'] < beta**2 * np.log(t):
                 chosen_arm = 'a0'
@@ -76,6 +78,6 @@ def CRM_ALG(T):
         cumulative_regrets.append(regret)
     return np.mean(cumulative_regrets)
 
-T = 100  # example time range
+T = 1000  # example time range
 average_cumulative_regret = CRM_ALG(T)
 print(f"Average Cumulative Regret over {T} time steps: {average_cumulative_regret}")
