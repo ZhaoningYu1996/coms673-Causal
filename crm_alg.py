@@ -1,46 +1,81 @@
 import numpy as np
 import math
 
-def simulate_arm_pull(arm, arms_info):
-    mean, std_dev = arms_info[arm]
-    reward = np.random.normal(mean, std_dev)
-    return reward
+def P_X1():
+    return np.random.choice([0, 1], p=[0.5, 0.5])
 
-def update_empirical_estimates(arm, reward, empirical_estimates, arm_counts):
-    arm_counts[arm] += 1
-    old_estimate = empirical_estimates[arm]
-    new_estimate = old_estimate + (reward - old_estimate) / arm_counts[arm]
-    empirical_estimates[arm] = new_estimate
+def P_X2_X3_given_X1(X1):
+    return np.random.choice([0, 1], p=[0.25 + 0.5 * X1, 0.75 - 0.5 * X1])
 
-def calculate_ucb(empirical_estimates, arm_counts, t):
-    ucb_estimates = {}
-    for arm in empirical_estimates:
-        ucb_estimates[arm] = empirical_estimates[arm] + math.sqrt(2 * math.log(t) / arm_counts[arm])
-    return ucb_estimates
+def P_Y_given_X2_X3(X2, X3):
+    return 1 if X2 == X3 else 0
 
-def crm_alg(arms, T, arms_info):
-    N = len(arms)
-    t = 2 * N + 2
+def simulate_intervention(do_X2=None, do_X3=None):
+    X1 = P_X1()
+    X2 = do_X2 if do_X2 is not None else P_X2_X3_given_X1(X1)
+    X3 = do_X3 if do_X3 is not None else P_X2_X3_given_X1(X1)
+    Y = P_Y_given_X2_X3(X2, X3)
+    return Y
+
+def compute_mu_hat_0(t, observations):
+    return sum(1 for Y, a_s in observations if Y == 1 and a_s == 'a0') / len(observations) if observations else 0
+
+def compute_mu_hat_i_x(t, arm, interventions):
+    return sum(interventions[arm]) / len(interventions[arm]) if interventions[arm] else 0
+
+def compute_mu_bar_a(t, mu_hat, N_a_t, C_i_x_t=0):
+    # return mu_hat + np.sqrt(2 * np.log(t) / (N_a_t + C_i_x_t))
+    if N_a_t + C_i_x_t <= 0:
+        return mu_hat  # or handle the case as you see fit
+    return mu_hat + np.sqrt(2 * np.log(t) / (N_a_t + C_i_x_t))
+
+def CRM_ALG(T):
+    # Initialize variables
+    N = 2  # Number of arms (X2 and X3)
     beta = 1
-    arm_counts = {arm: 1 for arm in arms}
-    empirical_estimates = {arm: 0 for arm in arms} 
+    observations = []  # Store (Y, a_s)
+    interventions = {'X2': [], 'X3': []}  # Store outcomes for interventions
+    arm_pulls = {'a0': 0, 'X2': 0, 'X3': 0}  # Number of times each arm is pulled
+    cumulative_regrets = []
+    for _ in range(30):  # 30 independent runs
+        regret = 0
+        for t in range(1, T + 1):
+            # Decide which arm to pull
+            if arm_pulls['a0'] < beta**2 * np.log(t):
+                chosen_arm = 'a0'
+            else:
+                # Compute UCB for each arm and choose the highest
+                ucb_X2 = compute_mu_bar_a(t, compute_mu_hat_i_x(t, 'X2', interventions), arm_pulls['X2'])
+                ucb_X3 = compute_mu_bar_a(t, compute_mu_hat_i_x(t, 'X3', interventions), arm_pulls['X3'])
+                chosen_arm = 'X2' if ucb_X2 > ucb_X3 else 'X3'
 
-    for t in range(2 * N + 2, T + 1):
-        ucb_estimates = calculate_ucb(empirical_estimates, arm_counts, t)
+            # Simulate intervention or observation based on chosen arm
+            Y = simulate_intervention(do_X2=1 if chosen_arm == 'X2' else None,
+                                      do_X3=1 if chosen_arm == 'X3' else None)
 
-        if arm_counts["a0"] < beta**2 * math.log(t):
-            arm_pulled = "a0"
-        else:
-            arm_pulled = max(ucb_estimates, key=ucb_estimates.get)
+            # Update observations and interventions
+            observations.append((Y, chosen_arm))
+            if chosen_arm != 'a0':
+                interventions[chosen_arm].append(Y)
 
-        reward = simulate_arm_pull(arm_pulled, arms_info)
-        update_empirical_estimates(arm_pulled, reward, empirical_estimates, arm_counts)
+            # Update arm pull counts
+            arm_pulls[chosen_arm] += 1
 
-        if empirical_estimates["a0"] < max(empirical_estimates.values()):
-            beta = min(2 * math.sqrt(2) / (empirical_estimates["best"] - empirical_estimates["a0"]), math.sqrt(math.log(t)))
+            # Update beta if necessary
+            mu_0 = compute_mu_hat_0(t, observations)
+            mu_2 = compute_mu_hat_i_x(t, "X2", interventions)
+            mu_3 = compute_mu_hat_i_x(t, "X3", interventions)
+            mu_star = max(mu_2, mu_3)
+            if mu_0 < mu_star:
+                beta = min(2 * np.sqrt(2 / (mu_star - mu_0)), np.sqrt(np.log(t)))
+            
+            best_arm_outcome = 5/8
+            regret += best_arm_outcome - Y
 
-# Example 
-arms = ["a0", "a1"] 
-T = 1000  # Total number of rounds
-arms_info = {"a0": (mean1, std_dev1), "a1": (mean2, std_dev2)} 
-crm_alg(arms, T, arms_info)
+        # Calculate cumulative regret
+        cumulative_regrets.append(regret)
+    return np.mean(cumulative_regrets)
+
+T = 100  # example time range
+average_cumulative_regret = CRM_ALG(T)
+print(f"Average Cumulative Regret over {T} time steps: {average_cumulative_regret}")
