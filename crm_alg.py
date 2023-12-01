@@ -75,42 +75,42 @@ def compute_mu_hat_i_x(arm, x, observations, arm_time_stamp):
         
         num = int(len(S_even)/C)
         
-        if C == 1:
+        # if C == 1:
+        #     p_t_c_0 = 0
+        #     p_t_c_1 = 0
+        #     S_t_c_length = num
+        #     sub_S_even = S_even
+        #     for i in sub_S_even:
+        #         if observations["X1"][i] == 0:
+        #             p_t_c_0 += 1
+        #         if observations["X1"][i] == 1:
+        #             p_t_c_1 += 1
+        #     Y_i_x = observations["Y"][S_z_0[0]]*p_t_c_0 + observations["Y"][S_z_1[0]]*p_t_c_1
+        # else:
+        Y_i_x = 0
+        for i in range(C-1):
             p_t_c_0 = 0
             p_t_c_1 = 0
             S_t_c_length = num
-            sub_S_even = S_even
-            for i in sub_S_even:
-                if observations["X1"][i] == 0:
-                    p_t_c_0 += 1
-                if observations["X1"][i] == 1:
-                    p_t_c_1 += 1
-            Y_i_x = observations["Y"][S_z_0[0]]*p_t_c_0 + observations["Y"][S_z_1[0]]*p_t_c_1
-        else:
-            Y_i_x = 0
-            for i in range(C-1):
-                p_t_c_0 = 0
-                p_t_c_1 = 0
-                S_t_c_length = num
-                sub_S_even = S_even[i*num:(i+1)*num]
-                for j in sub_S_even:
-                    if observations["X1"][j] == 0:
-                        p_t_c_0 += 1
-                    if observations["X1"][j] == 1:
-                        p_t_c_1 += 1
-                Y_c_i_x = observations["Y"][S_z_0[i]]*p_t_c_0 + observations["Y"][S_z_1[i]]*p_t_c_1
-                Y_i_x += Y_c_i_x
-            p_t_c_0 = 0
-            p_t_c_1 = 0
-            S_t_c_length = num
-            sub_S_even = S_even[(C-1)*num:]
+            sub_S_even = S_even[i*num:(i+1)*num]
             for j in sub_S_even:
                 if observations["X1"][j] == 0:
                     p_t_c_0 += 1
                 if observations["X1"][j] == 1:
                     p_t_c_1 += 1
-            Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0 + observations["Y"][S_z_1[-1]]*p_t_c_1
+            Y_c_i_x = observations["Y"][S_z_0[i]]*p_t_c_0/S_t_c_length + observations["Y"][S_z_1[i]]*p_t_c_1/S_t_c_length
             Y_i_x += Y_c_i_x
+        p_t_c_0 = 0
+        p_t_c_1 = 0
+        S_t_c_length = num
+        sub_S_even = S_even[(C-1)*num:]
+        for j in sub_S_even:
+            if observations["X1"][j] == 0:
+                p_t_c_0 += 1
+            if observations["X1"][j] == 1:
+                p_t_c_1 += 1
+        Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0/(len(S_even)-(C-1)*num) + observations["Y"][S_z_1[-1]]*p_t_c_1/(len(S_even)-(C-1)*num)
+        Y_i_x += Y_c_i_x
         count = 0
         for i in range(len(observations["Y"])):
             if observations["Y"][i] == 1 and observations["X2"][i] == x:
@@ -144,42 +144,42 @@ def compute_mu_hat_i_x(arm, x, observations, arm_time_stamp):
         
         num = int(len(S_even)/C)
         
-        if C == 1:
+        # if C == 1:
+        #     p_t_c_0 = 0
+        #     p_t_c_1 = 0
+        #     S_t_c_length = num
+        #     sub_S_even = S_even
+        #     for j in sub_S_even:
+        #         if observations["X1"][j] == 0:
+        #             p_t_c_0 += 1
+        #         if observations["X1"][j] == 1:
+        #             p_t_c_1 += 1
+        #     Y_i_x = observations["Y"][S_z_0[0]]*p_t_c_0 + observations["Y"][S_z_1[0]]*p_t_c_1
+        # else:
+        Y_i_x = 0
+        for i in range(C-1):
             p_t_c_0 = 0
             p_t_c_1 = 0
             S_t_c_length = num
-            sub_S_even = S_even
+            sub_S_even = S_even[i*num:(i+1)*num]
             for j in sub_S_even:
                 if observations["X1"][j] == 0:
                     p_t_c_0 += 1
                 if observations["X1"][j] == 1:
                     p_t_c_1 += 1
-            Y_i_x = observations["Y"][S_z_0[0]]*p_t_c_0 + observations["Y"][S_z_1[0]]*p_t_c_1
-        else:
-            Y_i_x = 0
-            for i in range(C-1):
-                p_t_c_0 = 0
-                p_t_c_1 = 0
-                S_t_c_length = num
-                sub_S_even = S_even[i*num:(i+1)*num]
-                for j in sub_S_even:
-                    if observations["X1"][j] == 0:
-                        p_t_c_0 += 1
-                    if observations["X1"][j] == 1:
-                        p_t_c_1 += 1
-                Y_c_i_x = observations["Y"][S_z_0[i]]*p_t_c_0 + observations["Y"][S_z_1[i]]*p_t_c_1
-                Y_i_x += Y_c_i_x
-            p_t_c_0 = 0
-            p_t_c_1 = 0
-            S_t_c_length = num
-            sub_S_even = S_even[(C-1)*num:]
-            for j in sub_S_even:
-                if observations["X1"][j] == 0:
-                    p_t_c_0 += 1
-                if observations["X1"][j] == 1:
-                    p_t_c_1 += 1
-            Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0 + observations["Y"][S_z_1[-1]]*p_t_c_1
+            Y_c_i_x = observations["Y"][S_z_0[i]]*p_t_c_0/num + observations["Y"][S_z_1[i]]*p_t_c_1/num
             Y_i_x += Y_c_i_x
+        p_t_c_0 = 0
+        p_t_c_1 = 0
+        S_t_c_length = num
+        sub_S_even = S_even[(C-1)*num:]
+        for j in sub_S_even:
+            if observations["X1"][j] == 0:
+                p_t_c_0 += 1
+            if observations["X1"][j] == 1:
+                p_t_c_1 += 1
+        Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0/(len(S_even)-(C-1)*num) + observations["Y"][S_z_1[-1]]*p_t_c_1/(len(S_even)-(C-1)*num)
+        Y_i_x += Y_c_i_x
         
         count = 0
         for i in range(len(observations["Y"])):
@@ -257,7 +257,7 @@ def CRM_ALG(T, nodes):
     # Initialize variables
     
     all_regret_list = []
-    for _ in range(3):  # 30 independent runs
+    for _ in range(2):  # 30 independent runs
         # N = 2  # Number of arms (X2 and X3)
         beta = 1
         observations = {x: [] for x in nodes}  # Store observations 0 or 1
@@ -389,7 +389,6 @@ def CRM_ALG(T, nodes):
                 beta = min(2 * np.sqrt(2 / (max(mu_hat_list) - mu_hat_a0)), np.sqrt(np.log(t)))
             
             best_arm_outcome = 5/8
-            print(Y)
             regret += best_arm_outcome - Y
             regret_list.append(regret)
 
