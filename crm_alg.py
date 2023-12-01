@@ -63,7 +63,7 @@ def compute_mu_hat_i_x(arm, x, observations, arm_time_stamp):
             for i in range(len(observations["Y"])):
                 if observations["Y"][i] == 1 and observations[arm][i] == x:
                     count += 1
-            return count / N, N, 0
+            return count / N, N, C
         
         num = int(len(S_even)/C)
         
@@ -101,7 +101,7 @@ def compute_mu_hat_i_x(arm, x, observations, arm_time_stamp):
                     p_t_c_0 += 1
                 if observations["X1"][j] == 1:
                     p_t_c_1 += 1
-            Y_c_i_x = observations["Y"][S_z_0[i]]*p_t_c_0 + observations["Y"][S_z_1[i]]*p_t_c_1
+            Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0 + observations["Y"][S_z_1[-1]]*p_t_c_1
             Y_i_x += Y_c_i_x
         count = 0
         for i in range(len(observations["Y"])):
@@ -170,7 +170,7 @@ def compute_mu_hat_i_x(arm, x, observations, arm_time_stamp):
                     p_t_c_0 += 1
                 if observations["X1"][j] == 1:
                     p_t_c_1 += 1
-            Y_c_i_x = observations["Y"][S_z_0[i]]*p_t_c_0 + observations["Y"][S_z_1[i]]*p_t_c_1
+            Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0 + observations["Y"][S_z_1[-1]]*p_t_c_1
             Y_i_x += Y_c_i_x
         
         count = 0
