@@ -17,12 +17,13 @@ def simulate_intervention(do_X1=None, do_X2=None, do_X3=None):
     X2 = do_X2 if do_X2 is not None else P_X2_X3_given_X1(X1)
     X3 = do_X3 if do_X3 is not None else P_X2_X3_given_X1(X1)
     Y = P_Y_given_X2_X3(X2, X3)
-    if do_X1 is None and do_X2 is None and do_X3 is None:
-        regret = 1/2
-    elif do_X1 is not None:
-        regret = 5/8
-    elif do_X2 is not None or do_X3 is not None:
-        regret = 1/4
+    # if do_X1 is None and do_X2 is None and do_X3 is None:
+    #     regret = 1/2
+    # elif do_X1 is not None:
+    #     regret = 5/8
+    # elif do_X2 is not None or do_X3 is not None:
+    #     regret = 1/4
+    regret = 0
         
     return X1, X2, X3, Y, regret
 
@@ -388,7 +389,7 @@ def CRM_ALG(T, nodes):
                 beta = min(2 * np.sqrt(2 / (max(mu_hat_list) - mu_hat_a0)), np.sqrt(np.log(t)))
             
             best_arm_outcome = 5/8
-
+            print(Y)
             regret += best_arm_outcome - Y
             regret_list.append(regret)
 
