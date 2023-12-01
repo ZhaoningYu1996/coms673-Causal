@@ -292,7 +292,7 @@ def CRM_ALG(T, nodes):
                 ucb_X3_0 = compute_mu_bar_a(t, mu_hat_3_0, N_3_0, C_3_0)
                 ucb_X3_1 = compute_mu_bar_a(t, mu_hat_3_1, N_3_1, C_3_1)
                 ucb_a0 = compute_mu_bar_a(t, mu_hat_a0, N_a0, 0)
-                ucb_list = [ucb_X1_0, ucb_X1_1, ucb_X2_0, ucb_X2_1, ucb_X3_0, ucb_X3_1]
+                ucb_list = [ucb_X1_0, ucb_X1_1, ucb_X2_0, ucb_X2_1, ucb_X3_0, ucb_X3_1, ucb_a0]
                 if ucb_list.index(max(ucb_list)) == 0:
                     chosen_arm = "X1"
                     observations["pulled_arm"].append(chosen_arm)
@@ -368,7 +368,7 @@ def CRM_ALG(T, nodes):
             mu_hat_3_0, N_3_0, C_3_0 = compute_mu_hat_i_x('X3', 0, observations, arm_time_stamp)
             mu_hat_3_1, N_3_1, C_3_1 = compute_mu_hat_i_x('X3', 1, observations, arm_time_stamp)
             mu_hat_a0, N_a0 = compute_mu_hat_0(observations, arm_time_stamp)
-            mu_hat_list = [mu_hat_1_0, mu_hat_1_1, mu_hat_2_0, mu_hat_2_1, mu_hat_3_0, mu_hat_3_1]
+            mu_hat_list = [mu_hat_1_0, mu_hat_1_1, mu_hat_2_0, mu_hat_2_1, mu_hat_3_0, mu_hat_3_1, mu_hat_a0]
             if mu_hat_a0 < max(mu_hat_list):
                 beta = min(2 * np.sqrt(2 / (max(mu_hat_list) - mu_hat_a0)), np.sqrt(np.log(t)))
             
