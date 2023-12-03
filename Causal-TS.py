@@ -2,6 +2,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 import random
+import torch
 
 def P_X1():
     return np.random.choice([0, 1], p=[0.5, 0.5])
@@ -191,7 +192,7 @@ def initialize(observations, intervention, arm_time_stamp, ):
 def causal_ts(T, T0):
     
     all_regret_list = []
-    for _ in range(30):
+    for _ in range(10):
     
         S_list = {"X1_0": 1, "X1_1": 1, "X2_0": 1, "X2_1": 1, "X3_0": 1, "X3_1": 1, "a0": 1}
         F_list = {"X1_0": 1, "X1_1": 1, "X2_0": 1, "X2_1": 1, "X3_0": 1, "X3_1": 1, "a0": 1}
@@ -348,15 +349,16 @@ def causal_ts(T, T0):
 
     return np.mean(all_regret, axis=0)
 
-T = 10000  # example time range
-T0 = 10
+T = 50000  # example time range
+T0 = 500
 nodes = ["X1", "X2", "X3", "a0"]
 cumulative_regret = causal_ts(T, T0)
+torch.save(cumulative_regret, "ts_50000_500.pt")
 print(f"Average Cumulative Regret over {T} time steps: {cumulative_regret[-1]}")
 import matplotlib.pyplot as plt
 x_values = list(range(len(cumulative_regret)))
 plt.plot(x_values, cumulative_regret)
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.savefig('TS_1000.png')
+plt.savefig('TS_50000_500.png')
 plt.show()
