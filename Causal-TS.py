@@ -72,7 +72,7 @@ def compute_mu_hat_i_x(theta, arm, x, observations, arm_time_stamp):
         Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0/(len(S_even)-(C-1)*num) + observations["Y"][S_z_1[-1]]*p_t_c_1/(len(S_even)-(C-1)*num)
         Y_i_x += Y_c_i_x
     
-        return (N * theta + Y_i_x) / (N + C)
+        return ((N+1) * theta + Y_i_x) / (N + C + 1)
     
     if arm in ["X3_0", "X3_1"]:
         S_z_0 = []
@@ -120,7 +120,7 @@ def compute_mu_hat_i_x(theta, arm, x, observations, arm_time_stamp):
         Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0/(len(S_even)-(C-1)*num) + observations["Y"][S_z_1[-1]]*p_t_c_1/(len(S_even)-(C-1)*num)
         Y_i_x += Y_c_i_x
         
-        return (N * theta + Y_i_x) / (N + C)
+        return ((N+1) * theta + Y_i_x) / (N + C + 1)
 
 def initialize(observations, intervention, arm_time_stamp, ):
     # X1 = 0
@@ -191,7 +191,7 @@ def initialize(observations, intervention, arm_time_stamp, ):
 def causal_ts(T, T0):
     
     all_regret_list = []
-    for _ in range(10):
+    for _ in range(30):
     
         S_list = {"X1_0": 1, "X1_1": 1, "X2_0": 1, "X2_1": 1, "X3_0": 1, "X3_1": 1, "a0": 1}
         F_list = {"X1_0": 1, "X1_1": 1, "X2_0": 1, "X2_1": 1, "X3_0": 1, "X3_1": 1, "a0": 1}
@@ -204,8 +204,11 @@ def causal_ts(T, T0):
         
         regret = 0
         
+        	
+        rng = np.random.default_rng(2023)
+        
         for t in tqdm(range(T)):
-            if len(arm_time_stamp["a0"]) <= T0:
+            if t <= T0:
                 chosen_arm = 'a0'
                 observations["pulled_arm"].append(chosen_arm)
                 arm_time_stamp[chosen_arm].append(t)
@@ -219,13 +222,14 @@ def causal_ts(T, T0):
                 else:
                     F_list["a0"] += 1
             else:
-                theta_X1_0 = np.random.beta(S_list["X1_0"], F_list["X1_0"])
-                theta_X1_1 = np.random.beta(S_list["X1_1"], F_list["X1_1"])
-                theta_X2_0 = np.random.beta(S_list["X2_0"], F_list["X2_0"])
-                theta_X2_1 = np.random.beta(S_list["X2_1"], F_list["X2_1"])
-                theta_X3_0 = np.random.beta(S_list["X3_0"], F_list["X3_0"])
-                theta_X3_1 = np.random.beta(S_list["X3_1"], F_list["X3_1"])
-                theta_a0 = np.random.beta(S_list["a0"], F_list["a0"])
+                # print(stop)
+                theta_X1_0 = rng.beta(S_list["X1_0"], F_list["X1_0"])
+                theta_X1_1 = rng.beta(S_list["X1_1"], F_list["X1_1"])
+                theta_X2_0 = rng.beta(S_list["X2_0"], F_list["X2_0"])
+                theta_X2_1 = rng.beta(S_list["X2_1"], F_list["X2_1"])
+                theta_X3_0 = rng.beta(S_list["X3_0"], F_list["X3_0"])
+                theta_X3_1 = rng.beta(S_list["X3_1"], F_list["X3_1"])
+                theta_a0 = rng.beta(S_list["a0"], F_list["a0"])
                 mu_hat_1_0 = compute_mu_hat_i_x(theta_X1_0, 'X1_0', 0, observations, arm_time_stamp)
                 mu_hat_1_1 = compute_mu_hat_i_x(theta_X1_1, 'X1_1', 1, observations, arm_time_stamp)
                 mu_hat_2_0 = compute_mu_hat_i_x(theta_X2_0, 'X2_0', 0, observations, arm_time_stamp)
@@ -234,6 +238,8 @@ def causal_ts(T, T0):
                 mu_hat_3_1 = compute_mu_hat_i_x(theta_X3_1, 'X3_1', 1, observations, arm_time_stamp)
                 mu_hat_a0 = theta_a0
                 ts_list = [mu_hat_1_0, mu_hat_1_1, mu_hat_2_0, mu_hat_2_1, mu_hat_3_0, mu_hat_3_1, mu_hat_a0]
+                
+                # print(ts_list)
                 
                 if ts_list.index(max(ts_list)) == 0:
                     chosen_arm = "X1_0"
@@ -326,8 +332,15 @@ def causal_ts(T, T0):
                         S_list["a0"] += 1
                     else:
                         F_list["a0"] += 1
+            # print("-------->")
+            # print(S_list)
+            # print(F_list)
+            # if t > T0:
+            #     print(ts_list)
             best_arm_outcome = 5/8
             regret += best_arm_outcome - Y
+            # print("--->")
+            # print(Y)
             regret_list.append(regret)
         all_regret_list.append(regret_list)
     
@@ -336,7 +349,7 @@ def causal_ts(T, T0):
     return np.mean(all_regret, axis=0)
 
 T = 10000  # example time range
-T0 = 1000
+T0 = 10
 nodes = ["X1", "X2", "X3", "a0"]
 cumulative_regret = causal_ts(T, T0)
 print(f"Average Cumulative Regret over {T} time steps: {cumulative_regret[-1]}")
@@ -345,5 +358,5 @@ x_values = list(range(len(cumulative_regret)))
 plt.plot(x_values, cumulative_regret)
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.savefig('TS_50000.png')
+plt.savefig('TS_1000.png')
 plt.show()

@@ -2,6 +2,7 @@ import numpy as np
 import math
 from tqdm import tqdm
 import random
+import torch
 
 def P_X1():
     return np.random.choice([0, 1], p=[0.5, 0.5])
@@ -522,10 +523,11 @@ def CRM_ALG(T, nodes):
             regret_list.append(regret)
         
         # print(arm_pulls)
-        print(mu_hat_list)
+        # print(mu_hat_list)
 
         # Calculate cumulative regret
         # cumulative_regrets.append(regret)
+        print(regret_list[-1])
         all_regret_list.append(regret_list)
     
     all_regret = np.array(all_regret_list)
@@ -537,11 +539,12 @@ def CRM_ALG(T, nodes):
 T = 50000  # example time range
 nodes = ["X1", "X2", "X3", "a0"]
 cumulative_regret = CRM_ALG(T, nodes)
+torch.save(cumulative_regret, "crm_5000.pt")
 print(f"Average Cumulative Regret over {T} time steps: {cumulative_regret[-1]}")
 import matplotlib.pyplot as plt
 x_values = list(range(len(cumulative_regret)))
 plt.plot(x_values, cumulative_regret)
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.savefig('plot_50000.png')
+plt.savefig('crm_50000.png')
 plt.show()
