@@ -121,7 +121,8 @@ def compute_mu_hat_i_x(theta, arm, x, observations, arm_time_stamp):
         Y_c_i_x = observations["Y"][S_z_0[-1]]*p_t_c_0/(len(S_even)-(C-1)*num) + observations["Y"][S_z_1[-1]]*p_t_c_1/(len(S_even)-(C-1)*num)
         Y_i_x += Y_c_i_x
         
-        return ((N+1) * theta + Y_i_x) / (N + C + 1)
+        # return ((N+1) * theta + Y_i_x) / (N + C + 1)
+        return (theta + Y_i_x / C)/2
 
 def initialize(observations, intervention, arm_time_stamp, ):
     # X1 = 0
@@ -192,7 +193,7 @@ def initialize(observations, intervention, arm_time_stamp, ):
 def causal_ts(T, T0):
     
     all_regret_list = []
-    for _ in range(10):
+    for _ in range(30):
     
         S_list = {"X1_0": 1, "X1_1": 1, "X2_0": 1, "X2_1": 1, "X3_0": 1, "X3_1": 1, "a0": 1}
         F_list = {"X1_0": 1, "X1_1": 1, "X2_0": 1, "X2_1": 1, "X3_0": 1, "X3_1": 1, "a0": 1}
@@ -206,7 +207,7 @@ def causal_ts(T, T0):
         regret = 0
         
         	
-        rng = np.random.default_rng(2023)
+        # rng = np.random.default_rng()
         
         for t in tqdm(range(T)):
             if t <= T0:
@@ -224,13 +225,20 @@ def causal_ts(T, T0):
                     F_list["a0"] += 1
             else:
                 # print(stop)
-                theta_X1_0 = rng.beta(S_list["X1_0"], F_list["X1_0"])
-                theta_X1_1 = rng.beta(S_list["X1_1"], F_list["X1_1"])
-                theta_X2_0 = rng.beta(S_list["X2_0"], F_list["X2_0"])
-                theta_X2_1 = rng.beta(S_list["X2_1"], F_list["X2_1"])
-                theta_X3_0 = rng.beta(S_list["X3_0"], F_list["X3_0"])
-                theta_X3_1 = rng.beta(S_list["X3_1"], F_list["X3_1"])
-                theta_a0 = rng.beta(S_list["a0"], F_list["a0"])
+                # theta_X1_0 = rng.beta(S_list["X1_0"], F_list["X1_0"])
+                # theta_X1_1 = rng.beta(S_list["X1_1"], F_list["X1_1"])
+                # theta_X2_0 = rng.beta(S_list["X2_0"], F_list["X2_0"])
+                # theta_X2_1 = rng.beta(S_list["X2_1"], F_list["X2_1"])
+                # theta_X3_0 = rng.beta(S_list["X3_0"], F_list["X3_0"])
+                # theta_X3_1 = rng.beta(S_list["X3_1"], F_list["X3_1"])
+                # theta_a0 = rng.beta(S_list["a0"], F_list["a0"])
+                theta_X1_0 = np.random.beta(S_list["X1_0"], F_list["X1_0"])
+                theta_X1_1 = np.random.beta(S_list["X1_1"], F_list["X1_1"])
+                theta_X2_0 = np.random.beta(S_list["X2_0"], F_list["X2_0"])
+                theta_X2_1 = np.random.beta(S_list["X2_1"], F_list["X2_1"])
+                theta_X3_0 = np.random.beta(S_list["X3_0"], F_list["X3_0"])
+                theta_X3_1 = np.random.beta(S_list["X3_1"], F_list["X3_1"])
+                theta_a0 = np.random.beta(S_list["a0"], F_list["a0"])
                 mu_hat_1_0 = compute_mu_hat_i_x(theta_X1_0, 'X1_0', 0, observations, arm_time_stamp)
                 mu_hat_1_1 = compute_mu_hat_i_x(theta_X1_1, 'X1_1', 1, observations, arm_time_stamp)
                 mu_hat_2_0 = compute_mu_hat_i_x(theta_X2_0, 'X2_0', 0, observations, arm_time_stamp)
@@ -349,16 +357,16 @@ def causal_ts(T, T0):
 
     return np.mean(all_regret, axis=0)
 
-T = 50000  # example time range
-T0 = 500
+T = 10000  # example time range
+T0 = 200
 nodes = ["X1", "X2", "X3", "a0"]
 cumulative_regret = causal_ts(T, T0)
-torch.save(cumulative_regret, "ts_50000_500.pt")
+torch.save(cumulative_regret, "ts_10000_200.pt")
 print(f"Average Cumulative Regret over {T} time steps: {cumulative_regret[-1]}")
 import matplotlib.pyplot as plt
 x_values = list(range(len(cumulative_regret)))
 plt.plot(x_values, cumulative_regret)
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.savefig('TS_50000_500.png')
+plt.savefig('TS_10000_200.png')
 plt.show()
